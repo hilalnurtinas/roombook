@@ -1,7 +1,5 @@
 # Git
 
-> **Template — adjust at bootstrap.** Defaults below are safe; loosen consciously, not accidentally.
-
 ## Branching
 - `feature/<spec-no>-<short-name>` — **no branch without a spec.**
 - Fixes: `fix/<spec-no>-<short-name>`; incidents: `incident/<date>-<short-name>`.

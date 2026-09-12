@@ -1,25 +1,25 @@
 # Architecture
 
-> **Template — filled during bootstrap.** Describe the architecture you *decided on*, not an
-> aspiration. Agents read this file before planning; vague answers here become vague code.
-
 ## System overview
-<!-- 3–6 sentences: what the system is, its architectural style (monolith / modular monolith /
-services / etc.), and the one-line reason for that choice (link the ADR). -->
+Roombook is a room-booking API: users book rooms for time slots, room-owners approve or reject
+bookings, and recurring bookings generate a series of occurrences. Built as a single deployable
+service (layered architecture) — no module-boundary split, since the domain is small enough that
+extra ceremony isn't worth it yet.
 
-## Modules / components and ownership
-<!-- One row per module: single responsibility + the data it owns (conceptual, not table-level). -->
-
-| Module | Single responsibility | Owns |
+## Layers
+| Layer | Single responsibility | Owns |
 |---|---|---|
-| | | |
+| Routers (FastAPI) | HTTP request/response, auth dependency wiring | Route definitions, request/response schemas |
+| Services | Business rules (conflict checks, approval, recurrence expansion) | Domain logic, transactions |
+| Repositories/Models | Persistence | SQLAlchemy models, queries |
 
 ## Communication rules
-<!-- When is a direct call allowed, when an event/message, when is it forbidden? -->
+Routers call services; services call repositories. Routers never touch the DB directly; services
+never build HTTP responses.
 
 ## Forbidden dependencies (make them testable)
-<!-- Concrete prohibitions an architecture test could assert, e.g.
-"Module A never accesses Module B's internal types or storage — only its public interface." -->
+- Routers never import SQLAlchemy models or issue queries directly — only through services.
+- Services never import FastAPI request/response types.
 
 ## Deliberately out of scope
-<!-- Conscious non-goals for the current version. -->
+- Notifications/email, multi-tenant orgs, payment/billing, mobile clients — v1 is the booking API only.
