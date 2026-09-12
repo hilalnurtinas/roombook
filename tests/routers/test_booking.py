@@ -97,6 +97,21 @@ async def test_end_before_start_rejected(client: AsyncClient, test_session: Asyn
     assert resp.status_code == 422
 
 
+async def test_end_at_equal_to_start_at_rejected(
+    client: AsyncClient, test_session: AsyncSession
+) -> None:
+    await make_user(test_session, id=1, name="Owner")
+    await make_room(test_session, id=1, owner_id=1)
+
+    resp = await client.post(
+        "/bookings", json=_payload(start=T0, end=T0), headers={"X-User-Id": "1"}
+    )
+
+    assert resp.status_code == 422
+    messages = [error["msg"] for error in resp.json()["detail"]]
+    assert any("end_at must be after start_at" in msg for msg in messages)
+
+
 async def test_missing_required_field_rejected(
     client: AsyncClient, test_session: AsyncSession
 ) -> None:
@@ -131,6 +146,21 @@ async def test_unresolvable_current_user_rejected(
     resp = await client.post("/bookings", json=_payload(), headers={"X-User-Id": "999"})
 
     assert resp.status_code == 401
+
+
+async def test_non_integer_user_id_header_rejected(
+    client: AsyncClient, test_session: AsyncSession
+) -> None:
+    # Documents current behavior: a malformed X-User-Id fails FastAPI's own header type
+    # coercion (422) before app.auth.get_current_user ever runs, rather than surfacing as
+    # UnresolvedUserError's 401. Still a typed, non-500 rejection — see spec 0002 verify
+    # notes on AC-11 for the open question of whether this should instead be a 401.
+    await make_user(test_session, id=1, name="Owner")
+    await make_room(test_session, id=1, owner_id=1)
+
+    resp = await client.post("/bookings", json=_payload(), headers={"X-User-Id": "not-a-number"})
+
+    assert resp.status_code == 422
 
 
 async def test_unknown_room_rejected(client: AsyncClient, test_session: AsyncSession) -> None:
