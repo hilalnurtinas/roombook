@@ -11,6 +11,11 @@ set -u
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 CONF="$ROOT/scripts/check.conf"
 
+if [ -d "$ROOT/.venv/bin" ]; then
+  PATH="$ROOT/.venv/bin:$PATH"
+  export PATH
+fi
+
 if [ ! -f "$CONF" ]; then
   echo "check: no scripts/check.conf yet." >&2
   echo "Run the bootstrap workflow (/bootstrap or prompts/bootstrap.md) to generate it," >&2

@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: roombook
+      POSTGRES_PASSWORD: roombook
+      POSTGRES_DB: roombook
+    ports:
+      - "${DB_HOST_PORT:-5432}:5432"
+    volumes:
+      - roombook-db-data:/var/lib/postgresql/data
+      - ./docker/init-test-db.sh:/docker-entrypoint-initdb.d/init-test-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U roombook -d roombook"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+asyncpg://roombook:roombook@db:5432/roombook
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+volumes:
+  roombook-db-data:
