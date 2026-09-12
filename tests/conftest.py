@@ -4,6 +4,7 @@ from collections.abc import AsyncIterator
 import pytest
 from dotenv import load_dotenv
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.db import get_session
@@ -27,6 +28,29 @@ async def test_session() -> AsyncIterator[AsyncSession]:
             await session.close()
             await transaction.rollback()
     await engine.dispose()
+
+
+@pytest.fixture
+async def two_real_sessions() -> AsyncIterator[tuple[AsyncSession, AsyncSession]]:
+    """Two independent, really-committing DB connections for testing true concurrency —
+    `test_session` shares one rolled-back transaction and can't model two concurrent
+    transactions racing against the exclusion constraint (see plan 0002's risk note).
+    """
+    engine = create_async_engine(TEST_DATABASE_URL)
+    session_factory = async_sessionmaker(bind=engine, expire_on_commit=False)
+    session_a = session_factory()
+    session_b = session_factory()
+    try:
+        yield session_a, session_b
+    finally:
+        await session_a.close()
+        await session_b.close()
+        async with engine.connect() as conn:
+            await conn.execute(text("DELETE FROM bookings"))
+            await conn.execute(text("DELETE FROM rooms"))
+            await conn.execute(text("DELETE FROM users"))
+            await conn.commit()
+        await engine.dispose()
 
 
 @pytest.fixture

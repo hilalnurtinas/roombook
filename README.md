@@ -164,6 +164,22 @@ Tests and checks (run from the venv above, against a reachable Postgres — eith
 If port 5432 is already taken locally, run Postgres on another host port with
 `DB_HOST_PORT=<port> docker compose up -d db` and point `.env` at that port instead.
 
+### API
+
+`POST /bookings` creates a booking. Requires an `X-User-Id: <id>` header identifying an existing
+`User` row — a temporary stand-in for real authentication (real JWT auth is a future spec; this
+header proves nothing about identity and must not be treated as a security control). Rooms and
+users have no management endpoints yet; create them directly in the database for now.
+
+```bash
+curl -X POST http://localhost:8000/bookings \
+  -H "Content-Type: application/json" -H "X-User-Id: 1" \
+  -d '{"room_id": 1, "start_at": "2026-01-01T10:00:00Z", "end_at": "2026-01-01T11:00:00Z"}'
+```
+
+A conflicting request is rejected `409` with the conflicting booking(s) and up to three suggested
+alternative slots on the same room, within 24 hours of the requested start.
+
 ## License
 
 MIT
