@@ -2,11 +2,14 @@ import os
 from collections.abc import AsyncIterator
 
 import pytest
+from dotenv import load_dotenv
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.db import get_session
 from app.main import app
+
+load_dotenv()
 
 TEST_DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 
