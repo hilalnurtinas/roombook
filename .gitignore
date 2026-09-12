@@ -12,5 +12,14 @@ Thumbs.db
 # Logs
 *.log
 
+# Python
+__pycache__/
+*.pyc
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
 # Claude Code personal settings (shared settings.json IS committed after init)
 .claude/settings.local.json
