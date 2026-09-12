@@ -134,6 +134,36 @@ ANEW distills the methodology behind the course *AI-Native Software Engineering*
 building a production system from an empty folder. The workspace is the system; the course is the
 mastery of it.
 
+## Running roombook
+
+Roombook is a room-booking API (Python/FastAPI + PostgreSQL). See `docs/architecture.md`,
+`docs/domain.md`, `docs/conventions.md` for the rules; this section covers running it.
+
+```bash
+cp .env.example .env               # fill in DATABASE_URL / TEST_DATABASE_URL if defaults don't fit
+docker compose up -d               # starts Postgres + the app (http://localhost:8000)
+curl http://localhost:8000/health  # {"status": "ok", "database": "connected"}
+```
+
+Migrations (run once the DB is up):
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+alembic upgrade head                          # migrate the app DB (DATABASE_URL)
+DATABASE_URL="$TEST_DATABASE_URL" alembic upgrade head   # migrate the test DB
+```
+
+Tests and checks (run from the venv above, against a reachable Postgres — either the
+`docker compose` DB, exposed on `localhost:5432` by default, or your own local instance):
+
+```bash
+./scripts/check   # lint (ruff), format check (ruff), types (mypy), tests (pytest)
+```
+
+If port 5432 is already taken locally, run Postgres on another host port with
+`DB_HOST_PORT=<port> docker compose up -d db` and point `.env` at that port instead.
+
 ## License
 
 MIT
