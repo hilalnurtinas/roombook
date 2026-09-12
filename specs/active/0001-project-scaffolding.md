@@ -63,3 +63,18 @@ No domain logic (rooms, bookings, auth) is added in this spec — that's out of 
 3. Test isolation: separate `roombook_test` database on the same Postgres container.
 4. Config via `pydantic-settings`, fail-fast on missing required env vars.
 5. Migrations via Alembic.
+
+## Review round 1 — triage
+Independent review (fresh reviewer subagent) ran `./scripts/check`, `docker compose`, and manual
+reproductions against the built code. Findings M1–M6 accepted as real and fixed (test tautology,
+missing service layer, crash-trace fail-fast, test config leaking into prod settings, no
+DB-down handling, no test-transaction isolation). L1, L4, L6, L7, L9 fixed as cheap now.
+L2, L3, L5, L8 deferred (recorded, not blocking).
+
+- **M7 — accepted scaffolding limitation, not a defect.** AC-2 says migrations "recreate the
+  schema"; this spec adds zero domain models, so the one migration (`0001_initial`) is
+  intentionally an empty marker (`upgrade()`/`downgrade()` are no-ops) — the plan authorized this.
+  Proof for AC-2 in this spec is at the plumbing level only: `alembic upgrade head` against a
+  fresh database creates the `alembic_version` table and stamps `0001`; `alembic downgrade base`
+  reverses it. The first feature spec that adds a real model will exercise a real schema-bearing
+  migration and re-prove AC-2 at that level.

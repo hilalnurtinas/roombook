@@ -1,18 +1,15 @@
 import pytest
-from pydantic import ValidationError
-from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from app.config import _load_settings
 
 
-class _RequiredOnlySettings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=None, extra="ignore")
-
-    database_url: str
-    test_database_url: str
-
-
-def test_missing_required_env_var_fails_fast(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_missing_required_env_var_fails_fast(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
     monkeypatch.delenv("DATABASE_URL", raising=False)
-    monkeypatch.delenv("TEST_DATABASE_URL", raising=False)
 
-    with pytest.raises(ValidationError):
-        _RequiredOnlySettings()
+    with pytest.raises(SystemExit) as exc_info:
+        _load_settings(None)
+
+    assert exc_info.value.code == 1
+    assert "database_url" in capsys.readouterr().err
