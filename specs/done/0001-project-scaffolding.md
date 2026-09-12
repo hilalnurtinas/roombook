@@ -66,20 +66,20 @@ pre-exported DB vars) with a real Postgres 16 via `docker compose`.
   implementation details.
 
 ## Definition of Done
-- [ ] Every acceptance criterion mapped to proof (test or reproducible observation)
-- [ ] `scripts/check` green
-- [ ] Independent review done; real findings fixed, noise rejected with written rationale
-- [ ] Docs / ADRs updated if behavior or architecture changed
-- [ ] Spec moved to `specs/done/` (it becomes immutable there)
+- [x] Every acceptance criterion mapped to proof (test or reproducible observation)
+- [x] `scripts/check` green
+- [x] Independent review done; real findings fixed, noise rejected with written rationale
+- [x] Docs / ADRs updated if behavior or architecture changed (no architecture/decision changes beyond what's recorded in this spec)
+- [x] Spec moved to `specs/done/` (it becomes immutable there)
 
 ## Scorecard (fill at ship — honest numbers make the process improvable)
 | Metric | Value |
 |---|---|
-| Spec revisions | |
-| Fix rounds | |
-| Review findings: real / noise | |
-| Regressions introduced | |
-| Bugs escaped to production | |
+| Spec revisions | 2 (review round 1 addendum; fix round 2 + verify table addendum) |
+| Fix rounds | 2 (ace0093: M1-M6, L1/L4/L6/L7/L9; 4499d08: M4-introduced regression) |
+| Review findings: real / noise | 16 real (6 M-findings + 5 L-findings fixed + 4 L-findings deferred-but-real + 1 regression found in narrow re-review) / 1 noise (M7, accepted as scaffolding-scope limitation, not a defect) |
+| Regressions introduced | 1 (fix round 1's M4 change broke the local `./scripts/check` test path by dropping the only thing that loaded `.env` for `TEST_DATABASE_URL`; caught by narrow re-review before merge, fixed in fix round 2) |
+| Bugs escaped to production | 0 (caught pre-merge) |
 
 ## Decisions (resolved self-critique — approved by human)
 1. Postgres 16, run via `docker-compose.yml` (app + db services).
