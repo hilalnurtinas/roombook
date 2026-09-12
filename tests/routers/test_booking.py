@@ -107,6 +107,8 @@ async def test_missing_required_field_rejected(
     )
 
     assert resp.status_code == 422
+    missing_fields = {tuple(error["loc"]) for error in resp.json()["detail"]}
+    assert ("body", "end_at") in missing_fields
 
 
 async def test_missing_current_user_header_rejected(
