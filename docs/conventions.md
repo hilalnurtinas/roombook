@@ -1,20 +1,25 @@
 # Conventions
 
-> **Template — filled during bootstrap.** Only rules that are real: every rule here should be
-> either enforced by tooling (preferred) or checked in review. Aspirations don't belong here.
-
 ## Language & framework versions
-<!-- Pin what matters. -->
+Python 3.12, FastAPI, SQLAlchemy 2.x (async), Alembic for migrations, PostgreSQL 16, Pydantic v2.
 
 ## Naming
-<!-- Files, types, tests, branches — whatever the team must keep consistent. -->
+- Files/modules/functions/variables: `snake_case`.
+- Classes and Pydantic models: `PascalCase`.
+- Test files: `test_<module>.py`, mirroring `app/` structure under `tests/`.
+- Branches/commits: see `docs/git.md`.
 
 ## Error handling
-<!-- The one blessed pattern. What never leaks to users. -->
+- Domain errors are typed exceptions (e.g. `BookingConflictError`, `NotAuthorizedError`) raised from services.
+- A single set of FastAPI exception handlers maps typed exceptions to HTTP responses — routers never catch and translate errors themselves.
+- No stack traces or internal exception details ever reach the client; unhandled exceptions become a generic 500.
 
 ## Data rules
-<!-- e.g. money/percentages use decimal types; timestamps are UTC; IDs are ... -->
+- Timestamps: UTC, timezone-aware `datetime` everywhere (stored and in transit).
+- Primary keys: auto-increment integers.
+- Money/percentages: not applicable in v1 (no billing).
 
 ## Enforced by tooling
-<!-- List what the compiler/linter/analyzers already enforce, so review doesn't re-litigate it.
-Wire new rules into `scripts/check` whenever possible — prose is advice, tooling is law. -->
+- Formatting/lint: `ruff` (format + check).
+- Types: `mypy` in strict-ish mode on `app/`.
+- Wire new rules into `scripts/check` whenever possible.
